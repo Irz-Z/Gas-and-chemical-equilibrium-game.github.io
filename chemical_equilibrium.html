@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical Equilibrium Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .reaction {
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .sliders {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .slider-container {
+            text-align: center;
+        }
+        .equilibrium-constant {
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #95a5a6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="reaction">A + B ⇌ C + D</div>
+        <div class="sliders">
+            <div class="slider-container">
+                <label for="a">A: <span id="a-value">1</span></label>
+                <input type="range" id="a" min="0" max="10" value="1" step="0.1">
+            </div>
+            <div class="slider-container">
+                <label for="b">B: <span id="b-value">1</span></label>
+                <input type="range" id="b" min="0" max="10" value="1" step="0.1">
+            </div>
+            <div class="slider-container">
+                <label for="c">C: <span id="c-value">1</span></label>
+                <input type="range" id="c" min="0" max="10" value="1" step="0.1">
+            </div>
+            <div class="slider-container">
+                <label for="d">D: <span id="d-value">1</span></label>
+                <input type="range" id="d" min="0" max="10" value="1" step="0.1">
+            </div>
+        </div>
+        <div class="equilibrium-constant">Equilibrium Constant (K) = <span id="k-value">1.00</span></div>
+        <button id="check-equilibrium">Check Equilibrium</button>
+        <button id="back-to-index">Back to Index</button> <!-- Added button -->
+    </div>
+
+    <script>
+        const sliders = ['a', 'b', 'c', 'd'];
+        const targetK = 1.0;
+        let currentK = 1.0;
+
+        function updateSliderValue(id) {
+            document.getElementById(`${id}-value`).textContent = document.getElementById(id).value;
+        }
+
+        function calculateK() {
+            const a = parseFloat(document.getElementById('a').value);
+            const b = parseFloat(document.getElementById('b').value);
+            const c = parseFloat(document.getElementById('c').value);
+            const d = parseFloat(document.getElementById('d').value);
+            
+            currentK = (c * d) / (a * b);
+            document.getElementById('k-value').textContent = currentK.toFixed(2);
+        }
+
+        function checkEquilibrium() {
+            const tolerance = 0.1;
+            if (Math.abs(currentK - targetK) <= tolerance) {
+                alert("Congratulations! The system is at equilibrium.");
+            } else if (currentK < targetK) {
+                alert("The reaction needs to shift to the right (towards products) to reach equilibrium.");
+            } else {
+                alert("The reaction needs to shift to the left (towards reactants) to reach equilibrium.");
+            }
+        }
+
+        sliders.forEach(id => {
+            const slider = document.getElementById(id);
+            slider.addEventListener('input', () => {
+                updateSliderValue(id);
+                calculateK();
+            });
+        });
+
+        document.getElementById('check-equilibrium').addEventListener('click', checkEquilibrium);
+
+        // Back to index.html function
+        document.getElementById('back-to-index').addEventListener('click', () => {
+            window.location.href = 'index.html'; // Navigates back to index.html
+        });
+
+        // Initialize values
+        sliders.forEach(updateSliderValue);
+        calculateK();
+    </script>
+</body>
+</html>

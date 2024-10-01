@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boyle's Law Adventure</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      background-color: #f0f8ff;
+      margin: 0;
+      padding: 20px;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+    }
+
+    #gameArea {
+      position: relative;
+      width: 300px;
+      height: 300px;
+      background-color: #ecf0f1;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #ball {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #e74c3c;
+      border-radius: 50%;
+      transition: width 0.3s, height 0.3s;
+    }
+
+    #pressureGauge, #volumeGauge {
+      margin-top: 20px;
+      font-size: 18px;
+      color: #2980b9;
+    }
+
+    #volumeSlider {
+      width: 80%;
+      margin-top: 20px;
+    }
+
+    .button {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .button:hover {
+      background-color: #2980b9;
+    }
+
+    #score {
+      font-size: 24px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-top: 20px;
+    }
+
+    #message {
+      margin-top: 20px;
+      font-style: italic;
+      color: #7f8c8d;
+    }
+
+    #challenge {
+      margin-top: 20px;
+      font-weight: bold;
+      color: #8e44ad;
+    }
+
+    #submitChallenge {
+      background-color: #2ecc71;
+      margin-top: 10px;
+    }
+
+    #submitChallenge:hover {
+      background-color: #27ae60;
+    }
+
+    #backButton {
+      background-color: #95a5a6;
+      margin-top: 20px;
+    }
+
+    #backButton:hover {
+      background-color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <h1>Boyle's Law Adventure</h1>
+    <div id="gameArea">
+      <div id="ball"></div>
+    </div>
+    <div id="pressureGauge">Pressure: <span id="pressureValue">1.00</span> atm</div>
+    <div id="volumeGauge">Volume: <span id="volumeValue">1.00</span> L</div>
+    <input type="range" id="volumeSlider" min="0.5" max="2" step="0.01" value="1">
+    <button id="submitChallenge" class="button">Submit Challenge</button>
+    <button id="reset" class="button">Reset</button>
+    <div id="score">Score: <span id="scoreValue">0</span></div>
+    <div id="message"></div>
+    <div id="challenge"></div>
+    <button id="backButton" class="button">Back to Index</button>
+  </div>
+
+  <script>
+    let volume = 1.0;
+    let pressure = 1.0;
+    let score = 0;
+    let currentChallenge = null;
+
+    const ball = document.getElementById('ball');
+    const pressureValue = document.getElementById('pressureValue');
+    const volumeValue = document.getElementById('volumeValue');
+    const volumeSlider = document.getElementById('volumeSlider');
+    const scoreValue = document.getElementById('scoreValue');
+    const messageElement = document.getElementById('message');
+    const challengeElement = document.getElementById('challenge');
+    const submitButton = document.getElementById('submitChallenge');
+    const backButton = document.getElementById('backButton');
+
+    function updateBallAndPressure() {
+      const ballSize = volume * 100; // Scale the ball size
+      ball.style.width = `${ballSize}px`;
+      ball.style.height = `${ballSize}px`;
+      pressure = (1 / volume).toFixed(2);
+      pressureValue.textContent = pressure;
+      volumeValue.textContent = volume.toFixed(2);
+      
+      // Update ball color based on pressure
+      const hue = Math.max(0, Math.min(120, 120 - (pressure - 1) * 60));
+      ball.style.backgroundColor = `hsl(${hue}, 80%, 50%)`;
+    }
+
+    function updateScore(points) {
+      score += points;
+      scoreValue.textContent = score;
+    }
+
+    function setMessage(text) {
+      messageElement.textContent = text;
+    }
+
+    function generateChallenge() {
+      const targetPressure = (Math.random() * 1.5 + 0.5).toFixed(2);
+      currentChallenge = {
+        targetPressure: parseFloat(targetPressure)
+      };
+      challengeElement.textContent = `Challenge: Reach ${targetPressure} atm (±0.3 atm) and submit!`;
+    }
+
+    function checkChallenge() {
+      if (!currentChallenge) return;
+      
+      const difference = Math.abs(pressure - currentChallenge.targetPressure);
+      let points = 0;
+
+      if (difference <= 0.3) {
+        points = 10;
+        setMessage("Great job! You're within the target range. +10 points");
+        updateScore(points);
+        generateChallenge();
+      } else {
+        setMessage(`Close, but not quite. The target was ${currentChallenge.targetPressure} atm. Try again!`);
+      }
+    }
+
+    volumeSlider.addEventListener('input', () => {
+      volume = parseFloat(volumeSlider.value);
+      updateBallAndPressure();
+    });
+
+    submitButton.addEventListener('click', checkChallenge);
+
+    document.getElementById('reset').addEventListener('click', () => {
+      volume = 1.0;
+      volumeSlider.value = 1.0;
+      updateBallAndPressure();
+      setMessage("Game reset!");
+      generateChallenge();
+    });
+
+    backButton.addEventListener('click', () => {
+      window.location.href = 'index.html';
+    });
+
+    updateBallAndPressure();
+    generateChallenge();
+  </script>
+</body>
+</html>
