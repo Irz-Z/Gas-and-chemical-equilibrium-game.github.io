@@ -69,6 +69,10 @@
             text-align: center;
             margin-top: 20px;
         }
+        .k{
+            display: flex;
+            justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -154,12 +158,12 @@
             </div>
         </div>
         <div class="equilibrium-constant">Equilibrium Constant (K) = <span id="k-value">1.00</span></div>
-        <div>
+        <div class="k">
             <label for="user-k-input">Enter your K:</label>
             <input type="number" id="user-k-input" step="0.01">
         </div>
         <button id="hint-equilibrium">Get Hint</button>
-	<button id="submit-k">No! I will lose!</button>
+        <button id="submit-k">No! I will lose!</button>
         <button id="back-to-index">Back to Index</button>
         <div id="result-message"></div>
     </div>
@@ -172,16 +176,22 @@
 
         function updateSliderValue(id) {
             document.getElementById(`${id}-value`).textContent = document.getElementById(id).value;
+            calculateK();
+            showKValue();
         }
 
         function updateBalanceNumber(id) {
             const value = document.getElementById(id).value;
             document.getElementById(id.replace('-input', '')).textContent = value;
+            calculateK();
+            showKValue();
         }
 
         function updateStateSymbol(id) {
             const value = document.getElementById(id).value;
             document.getElementById(id.replace('-select', '')).textContent = value;
+            calculateK();
+            showKValue();
         }
 
         function calculateK() {
@@ -226,24 +236,22 @@
             document.getElementById('result-message').textContent = message;
         }
 
+        // Set up real-time updates for sliders, balance numbers, and state symbols
         sliders.forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 updateSliderValue(id);
-                calculateK();
             });
         });
 
         balanceInputs.forEach(id => {
             document.getElementById(id).addEventListener('input', () => {
                 updateBalanceNumber(id);
-                calculateK();
             });
         });
 
         stateSelects.forEach(id => {
             document.getElementById(id).addEventListener('change', () => {
                 updateStateSymbol(id);
-                calculateK();
             });
         });
 
