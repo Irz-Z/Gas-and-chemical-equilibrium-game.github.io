@@ -19,24 +19,30 @@
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
         }
         .reaction {
             font-size: 24px;
             margin-bottom: 20px;
             text-align: center;
         }
-        .sliders {
+        .sliders, .balance-numbers, .state-symbols {
             display: flex;
             justify-content: space-between;
             margin-bottom: 20px;
+            flex-wrap: wrap;
         }
-        .slider-container {
+        .slider-container, .balance-container, .state-container {
             text-align: center;
+            flex: 1 0 21%;
+            margin: 5px;
         }
         .equilibrium-constant {
             font-size: 18px;
             margin-bottom: 20px;
             text-align: center;
+            display: none; /* Hide the K value initially */
         }
         button {
             display: block;
@@ -52,11 +58,83 @@
         button:hover {
             background-color: #7f8c8d;
         }
+        input[type="number"] {
+            width: 50px;
+        }
+        select {
+            width: 60px;
+        }
+        #result-message {
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="reaction">A + B ⇌ C + D</div>
+        <div class="reaction">
+            <span id="balance-a">1</span>A<sub id="state-a">(aq)</sub> + 
+            <span id="balance-b">1</span>B<sub id="state-b">(aq)</sub> ⇌ 
+            <span id="balance-c">1</span>C<sub id="state-c">(aq)</sub> + 
+            <span id="balance-d">1</span>D<sub id="state-d">(aq)</sub>
+        </div>
+        <div class="balance-numbers">
+            <div class="balance-container">
+                <label for="balance-a-input">A:</label>
+                <input type="number" id="balance-a-input" min="1" max="10" value="1">
+            </div>
+            <div class="balance-container">
+                <label for="balance-b-input">B:</label>
+                <input type="number" id="balance-b-input" min="1" max="10" value="1">
+            </div>
+            <div class="balance-container">
+                <label for="balance-c-input">C:</label>
+                <input type="number" id="balance-c-input" min="1" max="10" value="1">
+            </div>
+            <div class="balance-container">
+                <label for="balance-d-input">D:</label>
+                <input type="number" id="balance-d-input" min="1" max="10" value="1">
+            </div>
+        </div>
+        <div class="state-symbols">
+            <div class="state-container">
+                <label for="state-a-select">A:</label>
+                <select id="state-a-select">
+                    <option value="aq">aq</option>
+                    <option value="g">g</option>
+                    <option value="l">l</option>
+                    <option value="s">s</option>
+                </select>
+            </div>
+            <div class="state-container">
+                <label for="state-b-select">B:</label>
+                <select id="state-b-select">
+                    <option value="aq">aq</option>
+                    <option value="g">g</option>
+                    <option value="l">l</option>
+                    <option value="s">s</option>
+                </select>
+            </div>
+            <div class="state-container">
+                <label for="state-c-select">C:</label>
+                <select id="state-c-select">
+                    <option value="aq">aq</option>
+                    <option value="g">g</option>
+                    <option value="l">l</option>
+                    <option value="s">s</option>
+                </select>
+            </div>
+            <div class="state-container">
+                <label for="state-d-select">D:</label>
+                <select id="state-d-select">
+                    <option value="aq">aq</option>
+                    <option value="g">g</option>
+                    <option value="l">l</option>
+                    <option value="s">s</option>
+                </select>
+            </div>
+        </div>
         <div class="sliders">
             <div class="slider-container">
                 <label for="a">A: <span id="a-value">1</span></label>
@@ -76,58 +154,101 @@
             </div>
         </div>
         <div class="equilibrium-constant">Equilibrium Constant (K) = <span id="k-value">1.00</span></div>
-        <button id="check-equilibrium">Check Equilibrium</button>
-        <button id="back-to-index">Back to Index</button> <!-- Added button -->
+        <div>
+            <label for="user-k-input">Enter your K:</label>
+            <input type="number" id="user-k-input" step="0.01">
+        </div>
+        <button id="hint-equilibrium">Get Hint</button>
+	<button id="submit-k">No! I will lose!</button>
+        <button id="back-to-index">Back to Index</button>
+        <div id="result-message"></div>
     </div>
 
     <script>
         const sliders = ['a', 'b', 'c', 'd'];
-        const targetK = 1.0;
-        let currentK = 1.0;
+        const balanceInputs = ['balance-a-input', 'balance-b-input', 'balance-c-input', 'balance-d-input'];
+        const stateSelects = ['state-a-select', 'state-b-select', 'state-c-select', 'state-d-select'];
+        let roundedK = 1.0;
 
         function updateSliderValue(id) {
             document.getElementById(`${id}-value`).textContent = document.getElementById(id).value;
         }
 
-        function calculateK() {
-            const a = parseFloat(document.getElementById('a').value);
-            const b = parseFloat(document.getElementById('b').value);
-            const c = parseFloat(document.getElementById('c').value);
-            const d = parseFloat(document.getElementById('d').value);
-            
-            currentK = (c * d) / (a * b);
-            document.getElementById('k-value').textContent = currentK.toFixed(2);
+        function updateBalanceNumber(id) {
+            const value = document.getElementById(id).value;
+            document.getElementById(id.replace('-input', '')).textContent = value;
         }
 
-        function checkEquilibrium() {
-            const tolerance = 0.1;
-            if (Math.abs(currentK - targetK) <= tolerance) {
-                alert("Congratulations! The system is at equilibrium.");
-            } else if (currentK < targetK) {
-                alert("The reaction needs to shift to the right (towards products) to reach equilibrium.");
+        function updateStateSymbol(id) {
+            const value = document.getElementById(id).value;
+            document.getElementById(id.replace('-select', '')).textContent = value;
+        }
+
+        function calculateK() {
+            let numerator = 1;
+            let denominator = 1;
+
+            sliders.forEach((id, index) => {
+                const concentration = parseFloat(document.getElementById(id).value);
+                const balance = parseInt(document.getElementById(balanceInputs[index]).value);
+                const state = document.getElementById(stateSelects[index]).value;
+
+                if (state === 'aq' || state === 'g') {
+                    if (index < 2) { // A and B are reactants
+                        denominator *= Math.pow(concentration, balance);
+                    } else { // C and D are products
+                        numerator *= Math.pow(concentration, balance);
+                    }
+                }
+            });
+
+            const calculatedK = numerator / denominator;
+            roundedK = Math.round(calculatedK * 100) / 100; // Round to two decimal places
+        }
+
+        function showKValue() {
+            document.querySelector('.equilibrium-constant').style.display = 'block';
+            document.getElementById('k-value').textContent = roundedK.toFixed(2); // Display rounded K
+        }
+
+        function giveHint() {
+            const userK = parseFloat(document.getElementById('user-k-input').value);
+            let message = "";
+
+            if (userK > roundedK) {
+                message = "Shift Left! Your K value is too high.";
+            } else if (userK < roundedK) {
+                message = "Shift Right! Your K value is too low.";
             } else {
-                alert("The reaction needs to shift to the left (towards reactants) to reach equilibrium.");
+                message = "Perfect! You have the exact value.";
             }
+
+            document.getElementById('result-message').textContent = message;
         }
 
         sliders.forEach(id => {
-            const slider = document.getElementById(id);
-            slider.addEventListener('input', () => {
+            document.getElementById(id).addEventListener('input', () => {
                 updateSliderValue(id);
                 calculateK();
             });
         });
 
-        document.getElementById('check-equilibrium').addEventListener('click', checkEquilibrium);
-
-        // Back to index.html function
-        document.getElementById('back-to-index').addEventListener('click', () => {
-            window.location.href = 'index.html'; // Navigates back to index.html
+        balanceInputs.forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                updateBalanceNumber(id);
+                calculateK();
+            });
         });
 
-        // Initialize values
-        sliders.forEach(updateSliderValue);
-        calculateK();
+        stateSelects.forEach(id => {
+            document.getElementById(id).addEventListener('change', () => {
+                updateStateSymbol(id);
+                calculateK();
+            });
+        });
+
+        document.getElementById('hint-equilibrium').addEventListener('click', giveHint);
+        document.getElementById('submit-k').addEventListener('click', showKValue);
     </script>
 </body>
 </html>
