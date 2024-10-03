@@ -69,7 +69,7 @@
             text-align: center;
             margin-top: 20px;
         }
-        .k{
+        .k {
             display: flex;
             justify-content: center;
         }
@@ -177,21 +177,18 @@
         function updateSliderValue(id) {
             document.getElementById(`${id}-value`).textContent = document.getElementById(id).value;
             calculateK();
-            showKValue();
         }
 
         function updateBalanceNumber(id) {
             const value = document.getElementById(id).value;
             document.getElementById(id.replace('-input', '')).textContent = value;
             calculateK();
-            showKValue();
         }
 
         function updateStateSymbol(id) {
             const value = document.getElementById(id).value;
             document.getElementById(id.replace('-select', '')).textContent = value;
             calculateK();
-            showKValue();
         }
 
         function calculateK() {
@@ -217,7 +214,7 @@
         }
 
         function showKValue() {
-            document.querySelector('.equilibrium-constant').style.display = 'block';
+            document.querySelector('.equilibrium-constant').style.display = 'block'; // Show K value
             document.getElementById('k-value').textContent = roundedK.toFixed(2); // Display rounded K
         }
 
@@ -256,7 +253,10 @@
         });
 
         document.getElementById('hint-equilibrium').addEventListener('click', giveHint);
-        document.getElementById('submit-k').addEventListener('click', showKValue);
+        document.getElementById('submit-k').addEventListener('click', () => {
+            showKValue(); // Show the K value when the button is clicked
+            document.getElementById('result-message').textContent = ''; // Clear any previous messages
+        });
     </script>
 </body>
 </html>
